@@ -116,7 +116,7 @@ ros2 run g1_sensor_restamp record_scan_info.py 60 > scan_info.csv               
 
 - **`restamp_eval`** has no ROS dependency. It also builds standalone: `c++ -std=c++17 -O2 -I include src/restamp_eval.cpp -o restamp_eval`.
   - `--out restamped.csv` writes the restamped stream: input index and stamp of each output sample.
-  - The project's `scripts/restamp_replay.py` uses that to write `data/replay/<name>.restamped.g1replay`. Those copies have their IMU restamped exactly like `/g1/imu` on the robot.
+  - The project's `scripts/fastlio/restamp_replay.py` uses that to write `data/replay/<name>.restamped.g1replay`. Those copies have their IMU restamped exactly like `/g1/imu` on the robot.
 - **`record_scan_info.py`** records the per-scan stamp, arrival time and point-time range together with the IMU stamps. Use it to study how the vendor's cloud processing blocks the IMU path.
 
 - **`plot_restamp_check.py`** marks each output step that is longer than 5 ms by its cause. A **dropped repeat** means no new data. A **missing sample** means either lost upstream or missed only by the recorder; compare with the node's `lost` counter.
