@@ -14,7 +14,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt   # noqa: E402
 
 T = 0.005
-RAW_COLOR = '#eb6834'      # categorical slot 2 (orange): raw vendor stamps
+RAW_COLOR = '#eb6834'      # categorical slot 2 (orange): raw stamps
 OUT_COLOR = '#2a78d6'      # categorical slot 1 (blue): restamped output
 REP_COLOR = '#1baf7a'      # categorical slot 3 (aqua): output step across a dropped repeat
 INK, INK2, GRID, SURFACE = '#0b0b0b', '#52514e', '#e6e5e1', '#fcfcfb'
@@ -124,7 +124,7 @@ def main():
     print(f'  removed delay [ms]   {pct(removed)}   (raw stamp - output stamp)')
     print(f'  added latency [ms]   {pct(added)}   (arrival of output - arrival of raw)')
 
-    title = sys.argv[3] if len(sys.argv) > 3 else 'IMU restamping on the G1'
+    title = sys.argv[3] if len(sys.argv) > 3 else 'IMU restamping'
     ms = 2.5 if len(out) < 20000 else 1.2
     fig, axes = plt.subplots(2, 2, figsize=(13, 7.5))
     fig.patch.set_facecolor(SURFACE)
@@ -132,7 +132,7 @@ def main():
                  x=0.01, ha='left', fontsize=12, color=INK)
 
     ax = axes[0, 0]
-    ax.plot(rs[1:] - t0, raw_dt, 'o', ms=ms, color=RAW_COLOR, alpha=0.7, label='raw vendor stamps')
+    ax.plot(rs[1:] - t0, raw_dt, 'o', ms=ms, color=RAW_COLOR, alpha=0.7, label='raw stamps')
     plot_output_steps(ax, os_[1:] - t0, out_dt, kind, ms)
     style(ax, f'Stamp spacing: raw {raw_dt.min():.1f}-{raw_dt.max():.1f} ms, output on the 5 ms grid',
           'dt [ms]')
@@ -151,7 +151,7 @@ def main():
     m_r = (rs[1:] >= lo) & (rs[1:] <= hi)
     m_o = (os_[1:] >= lo) & (os_[1:] <= hi)
     ax.plot(rs[1:][m_r] - t0, raw_dt[m_r], 'o-', ms=4, lw=1, color=RAW_COLOR,
-            label='raw vendor stamps')
+            label='raw stamps')
     ax.plot(os_[1:][m_o] - t0, out_dt[m_o], '-', lw=1, color=OUT_COLOR)
     plot_output_steps(ax, os_[1:][m_o] - t0, out_dt[m_o], kind[m_o], 4)
     style(ax, f'Zoom on the largest raw step ({raw_dt[k - 1]:.1f} ms)', 'dt [ms]')

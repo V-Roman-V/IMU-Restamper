@@ -1,13 +1,12 @@
 #pragma once
 
-// Timestamp reconstruction for the G1 Mid-360 IMU stream.
+// Timestamp reconstruction for a host-stamped IMU stream.
 //
-// The vendor stamps every sample with host time after a delay that is never negative: usually
-// 0.2-2 ms, up to ~14 ms when its process stalls while handling a LiDAR scan (about every 100 ms),
-// after which the queued samples arrive in a burst (G1_Robot_Environment.md, section 5.3.1). The sensor itself samples on
-// a regular grid, so a sample's true time is the previous one plus one period. The grid is kept on
-// the lower envelope of the stamps by a one-sided running minimum (passive synchronization, Olson
-// 2010):
+// The driver stamps every sample with host time after a delay that is never negative and can be
+// large when its process stalls (e.g. while handling a LiDAR scan), after which the queued samples
+// arrive in a burst. The sensor itself samples on a regular grid, so a sample's true time is the
+// previous one plus one period. The grid is kept on the lower envelope of the stamps by a one-sided
+// running minimum (passive synchronization, Olson 2010):
 //
 //   pred = t_prev + T + creep     creep lets the grid rise back onto the envelope
 //   t    = min(stamp, pred)       late stamp: keep the grid; earlier stamp: the grid was too late
@@ -33,7 +32,7 @@
 #include <utility>
 #include <vector>
 
-namespace g1_sensor_restamp
+namespace imu_restamper
 {
 
 struct ImuParams
@@ -185,4 +184,4 @@ private:
   bool have_prev_ = false;
 };
 
-}  // namespace g1_sensor_restamp
+}  // namespace imu_restamper

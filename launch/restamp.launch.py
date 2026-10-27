@@ -6,8 +6,8 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    config = os.path.join(get_package_share_directory('g1_sensor_restamp'), 'config', 'restamp.yaml')
+    config = os.path.join(get_package_share_directory('imu_restamper'), 'config', 'restamp.yaml')
     return LaunchDescription([
-        Node(package='g1_sensor_restamp', executable='restamp_node', name='g1_sensor_restamp',
+        Node(package='imu_restamper', executable='restamp_node', name='imu_restamper',
              parameters=[config], output='screen'),
     ])

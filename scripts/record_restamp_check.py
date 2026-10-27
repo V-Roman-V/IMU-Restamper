@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Records the raw vendor IMU and the restamped output side by side, for plot_restamp_check.py.
+"""Records the raw IMU and the restamped output side by side, for plot_restamp_check.py.
 
-    ros2 run g1_sensor_restamp record_restamp_check.py 30 check.csv [--cloud]   # while restamp_node runs
+    ros2 run imu_restamper record_restamp_check.py 30 check.csv [--raw /imu] [--out /imu/restamped] [--cloud TOPIC]
 
 Rows: "<R|O>,<stamp_ns>,<arrival_ns>,ax,ay,az,gx,gy,gz" (R = raw input, O = restamped output). The
 arrival time is taken in this process, so arrival(O) - arrival(R) is the delay the node adds.
---cloud also subscribes to the vendor cloud (serialized, never decoded), as the SLAM will: the vendor
-process stalls the IMU while it delivers each scan to its subscribers.
+--cloud also subscribes to a point cloud (serialized, never decoded), as the SLAM will: some drivers
+stall the IMU only while they deliver scans to a subscriber.
 """
 import argparse
 import time
@@ -48,11 +48,12 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('duration', type=float)
     ap.add_argument('output')
-    ap.add_argument('--cloud', action='store_true', help='also subscribe to the vendor cloud')
+    ap.add_argument('--raw', default='/imu')
+    ap.add_argument('--out', default='/imu/restamped')
+    ap.add_argument('--cloud', help='also subscribe to this point cloud topic')
     args = ap.parse_args()
     rclpy.init()
-    node = Recorder('/utlidar/imu_livox_mid360', '/g1/imu',
-                    '/utlidar/cloud_livox_mid360' if args.cloud else None)
+    node = Recorder(args.raw, args.out, args.cloud)
     end = time.time() + args.duration
     while time.time() < end:
         rclpy.spin_once(node, timeout_sec=0.01)

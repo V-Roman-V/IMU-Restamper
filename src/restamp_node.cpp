@@ -1,12 +1,11 @@
-// Re-stamps the G1 vendor Mid-360 IMU stream onto the sensor's own regular sample grid.
-//   in:  /utlidar/imu_livox_mid360  host stamps; the vendor process stalls up to ~14 ms at every
-//                                   LiDAR scan and then releases the queued samples in a burst
-//   out: /g1/imu                    same messages, header.stamp = sample time, repeats dropped
+// Re-stamps a host-stamped IMU stream onto the sensor's own regular sample grid.
+//   in:  imu_in   host stamps, delayed and released in bursts by the driver
+//   out: imu_out  same messages, header.stamp = sample time, repeats dropped
 // If the input goes quiet for max_gap the node warns once. When the data returns with a stamp jump
 // the grid restarts at once; output continues while it settles.
 // Every 10 s it logs the counters and the per-axis standard deviation of the raw input acc + gyro
 // over those 10 s (before acc_scale; repeats included).
-// The algorithm is in restamper.hpp; the measurements are in G1_Robot_Environment.md, section 5.3.1.
+// The algorithm is in restamper.hpp.
 
 #include <array>
 #include <chrono>
@@ -18,9 +17,9 @@
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 
-#include "g1_sensor_restamp/restamper.hpp"
+#include "imu_restamper/restamper.hpp"
 
-namespace g1_sensor_restamp
+namespace imu_restamper
 {
 
 using Clock = std::chrono::steady_clock;
@@ -47,10 +46,10 @@ class RestampNode : public rclcpp::Node
 {
 public:
   explicit RestampNode(const rclcpp::NodeOptions & options)
-  : Node("g1_sensor_restamp", options)
+  : Node("imu_restamper", options)
   {
-    in_topic_ = declare_parameter<std::string>("imu_in", "/utlidar/imu_livox_mid360");
-    out_topic_ = declare_parameter<std::string>("imu_out", "/g1/imu");
+    in_topic_ = declare_parameter<std::string>("imu_in", "/imu");
+    out_topic_ = declare_parameter<std::string>("imu_out", "/imu/restamped");
     const bool reliable = declare_parameter<bool>("reliable_input", true);
     acc_scale_ = declare_parameter<double>("acc_scale", 1.0);
     ImuParams p;
@@ -150,12 +149,11 @@ private:
       RCLCPP_WARN(get_logger(), "no messages on %s yet", in_topic_.c_str());
       return;
     }
-    // Raw units: acc in g (Livox) -> mg, gyro in rad/s -> mrad/s.
     const ImuWindow & w = window_;
     RCLCPP_INFO(
       get_logger(),
       "in %llu out %llu | held %llu | lost %llu (%llu events) | repeats %llu | restarts %llu | "
-      "raw std (10 s) acc %.2f %.2f %.2f mg, gyro %.2f %.2f %.2f mrad/s",
+      "raw std (10 s, x1e3) acc %.2f %.2f %.2f, gyro %.2f %.2f %.2f",
       (unsigned long long)s.received, (unsigned long long)s.emitted, (unsigned long long)s.held,
       (unsigned long long)s.lost, (unsigned long long)s.loss_events,
       (unsigned long long)s.duplicates, (unsigned long long)s.restarts,
@@ -180,12 +178,12 @@ private:
   rclcpp::TimerBase::SharedPtr watchdog_, stats_timer_;
 };
 
-}  // namespace g1_sensor_restamp
+}  // namespace imu_restamper
 
 int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<g1_sensor_restamp::RestampNode>(rclcpp::NodeOptions()));
+  rclcpp::spin(std::make_shared<imu_restamper::RestampNode>(rclcpp::NodeOptions()));
   rclcpp::shutdown();
   return 0;
 }

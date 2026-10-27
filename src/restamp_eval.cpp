@@ -23,9 +23,9 @@
 #include <string>
 #include <vector>
 
-#include "g1_sensor_restamp/restamper.hpp"
+#include "imu_restamper/restamper.hpp"
 
-using namespace g1_sensor_restamp;
+using namespace imu_restamper;
 using Values = std::array<double, 6>;
 
 namespace
@@ -209,8 +209,9 @@ bool load_trace(const std::string & path, Stream & imu)
   return !ns.empty();
 }
 
-// Fixed-rate samples with the measured G1 delay pattern: 0.2-1.9 ms ordinary delay, and every
-// 100 ms with probability 0.3 a 3-14 ms stall whose samples are released in one burst; 6.8 % repeats.
+// Fixed-rate samples with a delay pattern measured on a Mid-360 behind a vendor driver: 0.2-1.9 ms
+// ordinary delay, and every 100 ms with probability 0.3 a 3-14 ms stall whose samples are released
+// in one burst; 6.8 % repeats.
 Stream make_synthetic(double minutes, double ppm, std::mt19937 & rng)
 {
   Stream st;
